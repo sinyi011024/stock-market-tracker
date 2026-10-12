@@ -15,87 +15,21 @@ COLORS = ["#688B73", "#C47D5A", "#6687B0", "#9A78A5", "#C3A14E",
           "#6C987F", "#B26F64", "#7776AD", "#9C9252", "#4E8F9B"]
 
 
-st.markdown("""
-<style>
-:root {
-    color-scheme: light;
-}
 
-/* Main background */
-.stApp,
-[data-testid="stAppViewContainer"] {
-    background: #F7F5F2 !important;
-    color: #423F3D !important;
-}
-
-/* Warm beige sidebar */
-[data-testid="stSidebar"],
-[data-testid="stSidebarContent"] {
-    background: #E8E2DC !important;
-    color: #423F3D !important;
-}
-
-/* Main text */
-.stApp p,
-.stApp label,
-.stApp small,
-[data-testid="stMarkdownContainer"] p {
-    color: #423F3D;
-}
-
-/* Sidebar text */
-[data-testid="stSidebar"] p,
-[data-testid="stSidebar"] label {
-    color: #423F3D !important;
-}
-
-/* Secondary text */
-[data-testid="stCaptionContainer"] p,
-[data-testid="stWidgetLabel"] p {
-    color: #77716D !important;
-}
-
-/* Headings */
-h1, h2, h3 {
-    color: #423F3D !important;
-    letter-spacing: -0.02em;
-}
-
-/* White metric cards */
-[data-testid="stMetric"] {
-    background: #FFFFFF;
-    border: 1px solid #DED8D2;
-    border-radius: 14px;
-    padding: 16px;
-}
-
-[data-testid="stMetricLabel"] *,
-[data-testid="stMetricValue"],
-[data-testid="stMetricValue"] * {
-    color: #423F3D !important;
-}
-
-[data-testid="stMetricDelta"] {
-    color: #708DA6 !important;
-}
-
-/* Card borders */
-[data-testid="stVerticalBlockBorderWrapper"] {
-    border-color: #DED8D2;
-}
-
-/* Sidebar input fields */
-[data-testid="stSidebar"] [data-baseweb="input"] > div,
+/* Sidebar input fields - Morandi palette */
+[data-testid="stSidebar"] [data-baseweb="input"],
 [data-testid="stSidebar"] [data-baseweb="base-input"],
+[data-testid="stSidebar"] [data-baseweb="select"],
 [data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background: #FFFFFF !important;
-    border: 1px solid #C9C2BC !important;
+    background-color: #F5F0EC !important;
+    color: #423F3D !important;
+    border: 1px solid #C8B8B0 !important;
     border-radius: 10px !important;
 }
 
 /* Input text */
 [data-testid="stSidebar"] input {
-    background: transparent !important;
+    background-color: transparent !important;
     color: #423F3D !important;
     -webkit-text-fill-color: #423F3D !important;
     caret-color: #708DA6 !important;
