@@ -357,11 +357,13 @@ fig.update_layout(
     )
 )
 
-# ==========================================
-# Display Interactive Chart
-# ==========================================
 
 st.plotly_chart(
     fig,
-    use_container_width=True
+    use_container_width=True,
+    config={
+        "displayModeBar": True,
+        "responsive": True
+    },
+    key="stock_comparison_chart"
 )
