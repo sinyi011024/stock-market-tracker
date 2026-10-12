@@ -195,27 +195,35 @@ m2.metric("History", period)
 m3.metric("Top return in range", f"{max(returns, key=returns.get)}: {max(returns.values()):+.1f}%"
           if returns else "N/A")
 
-st.subheader("Performance comparison")
-fig = go.Figure()
-for i, ticker in enumerate(prices.columns):
-    s = prices[ticker].dropna()
-    if s.empty:
-        continue
-    plotted = s / s.iloc[0] * 100 if mode == "Normalized performance" else s
-    fig.add_trace(go.Scatter(x=plotted.index, y=plotted.values, mode="lines",
-                             name=ticker, line=dict(color=COLORS[i % len(COLORS)], width=2.5)))
-fig.update_layout(
-    template="plotly_white", paper_bgcolor="#FFFFFF", plot_bgcolor="#FFFFFF",
-    font=dict(color="#43524B"), height=520, hovermode="x unified",
-    margin=dict(l=24, r=24, t=25, b=20),
-    xaxis=dict(title="Date", gridcolor="#E9EAE5"),
-    yaxis=dict(title="Index (start = 100)" if mode == "Normalized performance"
-               else "Adjusted price (USD)", gridcolor="#E9EAE5"),
-    legend=dict(orientation="h", y=-0.2)
-)
-st.plotly_chart(fig, use_container_width=True)
-st.caption("Normalized charts reset each stock to 100 at its first available observation "
-           "in the selected period. Stocks may have different listing dates.")
+
+st.subheader("Stock Performance Overview")
+
+st.caption(f"{len(prices.columns)} stocks · {period} historical performance")
+
+for start_idx in range(0, len(prices.columns), 3):
+    tickers_row = list(prices.columns)[start_idx:start_idx + 3]
+    cols = st.columns(3)
+
+    for i, ticker in enumerate(tickers_row):
+        stock_prices = prices[ticker].dropna()
+
+        if stock_prices.empty:
+            continue
+
+        first_price = stock_prices.iloc[0]
+        latest_price = stock_prices.iloc[-1]
+
+        total_return = (
+            (latest_price / first_price - 1) * 100
+            if first_price != 0 else float("nan")
+        )
+
+        with cols[i]:
+            st.metric(
+                label=f"{ticker} · {period}",
+                value=f"${latest_price:,.2f}",
+                delta=f"{total_return:+.2f}%"
+            )
 
 st.subheader("Performance summary")
 rows = []
