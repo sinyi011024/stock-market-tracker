@@ -253,19 +253,46 @@ for i, ticker in enumerate(prices.columns):
         )
     )
 
+
 fig.update_layout(
     template="plotly_white",
     paper_bgcolor="#FFFFFF",
     plot_bgcolor="#FFFFFF",
+    font=dict(
+        family="Arial, sans-serif",
+        size=14,
+        color="#35423C"
+    ),
     height=520,
     hovermode="x unified",
-    xaxis_title="Date",
-    yaxis_title=(
-        "Index (Start = 100)"
-        if mode == "Normalized performance"
-        else "Adjusted Price (USD)"
-    ),
-    legend=dict(orientation="h", y=-0.2)
-)
+    margin=dict(l=35, r=25, t=30, b=65),
 
-st.plotly_chart(fig, use_container_width=True)
+    xaxis=dict(
+        title="Date",
+        tickfont=dict(size=12, color="#52645A"),
+        title_font=dict(size=14, color="#35423C"),
+        gridcolor="#E5E8E2",
+        linecolor="#A9B4AB",
+        showline=True
+    ),
+
+    yaxis=dict(
+        title=(
+            "Index (Start = 100)"
+            if mode == "Normalized performance"
+            else "Adjusted Price (USD)"
+        ),
+        tickfont=dict(size=12, color="#52645A"),
+        title_font=dict(size=14, color="#35423C"),
+        gridcolor="#E5E8E2",
+        linecolor="#A9B4AB",
+        showline=True
+    ),
+
+    legend=dict(
+        orientation="h",
+        y=-0.22,
+        x=0,
+        font=dict(size=13, color="#35423C")
+    )
+)
