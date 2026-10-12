@@ -224,34 +224,3 @@ for start_idx in range(0, len(prices.columns), 3):
                 value=f"${latest_price:,.2f}",
                 delta=f"{total_return:+.2f}%"
             )
-
-st.subheader("Performance summary")
-rows = []
-for ticker in prices.columns:
-    s = prices[ticker].dropna()
-    if s.empty:
-        continue
-    total_return = (s.iloc[-1] / s.iloc[0] - 1) * 100 if s.iloc[0] else float("nan")
-    daily = s.pct_change().dropna()
-    volatility = daily.std() * (252 ** 0.5) * 100 if len(daily) > 1 and period not in ("1D", "5D") else float("nan")
-    drawdown = (s / s.cummax() - 1).min() * 100
-    rows.append({"Ticker": ticker, "First price ($)": s.iloc[0],
-                 "Latest price ($)": s.iloc[-1], "Total return (%)": total_return,
-                 "Annualized volatility (%)": volatility, "Max drawdown (%)": drawdown,
-                 "Observations": len(s)})
-summary = pd.DataFrame(rows).set_index("Ticker")
-st.dataframe(summary.style.format({
-    "First price ($)": "${:,.2f}", "Latest price ($)": "${:,.2f}",
-    "Total return (%)": "{:+.2f}%", "Annualized volatility (%)": "{:.2f}%",
-    "Max drawdown (%)": "{:.2f}%", "Observations": "{:,}"
-}), use_container_width=True)
-st.caption("Volatility uses daily returns and √252 annualization; not shown for intraday periods.")
-
-with st.expander("View historical prices and download CSV"):
-    st.dataframe(prices.sort_index(ascending=False), use_container_width=True)
-    st.download_button("Download CSV", prices.to_csv().encode("utf-8"),
-                       file_name="us_stock_history.csv", mime="text/csv")
-
-st.caption("Source: Yahoo Finance via yfinance. Data may be delayed, incomplete or unavailable. "
-           "Exchange directory may include ETFs and other listed securities. "
-           "For educational purposes; not investment advice.")
