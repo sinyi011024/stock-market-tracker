@@ -17,6 +17,32 @@ COLORS = ["#688B73", "#C47D5A", "#6687B0", "#9A78A5", "#C3A14E",
 st.markdown("""
 <style>
 
+/* Colorful dashboard metric cards */
+[data-testid="stMetric"] {
+    background-color: #E8F1FF !important;
+    border: 1px solid #D5E5FA !important;
+    border-radius: 14px !important;
+    padding: 18px !important;
+}
+
+/* Metric text */
+[data-testid="stMetricLabel"] {
+    color: #53627A !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: #344B73 !important;
+}
+
+/* Headings */
+h1 {
+    color: #405B8B !important;
+}
+
+h2, h3 {
+    color: #514A79 !important;
+}
+
 /* Sidebar input fields - Morandi palette */
 [data-testid="stSidebar"] [data-baseweb="input"],
 [data-testid="stSidebar"] [data-baseweb="base-input"],
