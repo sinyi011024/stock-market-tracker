@@ -491,3 +491,105 @@ else:
             yaxis=dict(autorange="reversed"),
         )
         st.plotly_chart(heat, use_container_width=True, key="corr_heatmap")
+
+import numpy as np
+
+@st.cache_data(ttl=900, show_spinner=False)
+def get_history_2y(tickers):
+    raw = yf.download(list(tickers), period="2y", interval="1d", auto_adjust=True,
+                      progress=False, threads=True, group_by="column")
+    if raw.empty:
+        return pd.DataFrame()
+    close = raw["Close"]
+    if isinstance(close, pd.Series):
+        close = close.to_frame(name=tickers[0])
+    return close.sort_index().dropna(axis=1, how="all")
+
+
+def calc_rsi(s, n=14):
+    d = s.diff()
+    up = d.clip(lower=0).ewm(alpha=1 / n, adjust=False).mean()
+    dn = (-d.clip(upper=0)).ewm(alpha=1 / n, adjust=False).mean()
+    return 100 - 100 / (1 + up / dn)
+
+
+def analyze(s):
+    s = s.dropna()
+    if len(s) < 210:
+        return None
+    price = s.iloc[-1]
+    ma50 = s.rolling(50).mean().iloc[-1]
+    ma200 = s.rolling(200).mean().iloc[-1]
+    mom = price / s.iloc[-126] - 1
+    rsi = calc_rsi(s).iloc[-1]
+    vol = s.pct_change().tail(252).std() * np.sqrt(252)
+    t1 = 1 if price > ma200 else -1
+    t2 = 1 if ma50 > ma200 else -1
+    m = float(np.clip(mom / 0.3, -1, 1))
+    r = -1 if rsi > 70 else (1 if rsi < 30 else 0)
+    score = 0.30 * t1 + 0.20 * t2 + 0.35 * m + 0.15 * r
+    return {
+        "Price": price,
+        "vs MA200 %": (price / ma200 - 1) * 100,
+        "6M Momentum %": mom * 100,
+        "RSI": rsi,
+        "Volatility %": vol * 100,
+        "Score": score,
+    }
+
+
+st.subheader("Trend Signals & Suggested Allocation")
+
+hist = get_history_2y(tuple(symbols))
+results = {}
+for t in hist.columns:
+    out = analyze(hist[t])
+    if out:
+        results[t] = out
+
+if not results:
+    st.info("Not enough history (need about 1 year of daily data) to compute signals.")
+else:
+    sig = pd.DataFrame(results).T
+    sig["Signal"] = np.where(sig["Score"] >= 0.35, "Bullish",
+                     np.where(sig["Score"] <= -0.35, "Bearish", "Neutral"))
+
+    raw = sig["Score"].clip(lower=0) / (sig["Volatility %"] / 100)
+    n = len(sig)
+    exposure = float(np.clip(sig["Score"].clip(lower=0).sum() / n, 0, 1))
+    if raw.sum() > 0:
+        w = raw / raw.sum() * exposure
+        w = w.clip(upper=max(0.4, 1 / n))
+    else:
+        w = pd.Series(0.0, index=sig.index)
+    sig["Suggested %"] = w * 100
+    cash = 100 - sig["Suggested %"].sum()
+
+    c1, c2 = st.columns(2)
+    c1.metric("Suggested invested", f"{100 - cash:.1f}%")
+    c2.metric("Suggested cash", f"{cash:.1f}%")
+
+    show = sig[["Price", "vs MA200 %", "6M Momentum %", "RSI", "Volatility %",
+                "Score", "Signal", "Suggested %"]]
+    st.dataframe(
+        show.style.format({
+            "Price": "${:,.2f}",
+            "vs MA200 %": "{:+.1f}%",
+            "6M Momentum %": "{:+.1f}%",
+            "RSI": "{:.0f}",
+            "Volatility %": "{:.1f}%",
+            "Score": "{:+.2f}",
+            "Suggested %": "{:.1f}%",
+        }),
+        use_container_width=True,
+    )
+
+    labels = list(sig.index) + ["Cash"]
+    values = list(sig["Suggested %"]) + [cash]
+    pie = go.Figure(go.Pie(labels=labels, values=values, hole=0.5,
+                           marker=dict(colors=COLORS[:len(sig)] + ["#D8DED8"])))
+    pie.update_layout(template="plotly_white", height=380, margin=dict(l=20, r=20, t=20, b=20))
+    st.plotly_chart(pie, use_container_width=True, key="alloc_pie")
+
+    st.caption("Rule-based educational model (trend, momentum, RSI, volatility). "
+               "Not investment advice; it ignores fundamentals, taxes and your personal risk tolerance.")
