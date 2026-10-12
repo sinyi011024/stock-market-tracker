@@ -21,55 +21,6 @@ RANGES = ["1D", "5D", "1M", "3M", "6M", "1Y", "3Y", "5Y", "10Y", "MAX", "Custom"
 METRIC_FMT = {"Total Return %": "{:+.1f}%", "Annualized Return %": "{:+.1f}%",
               "Annualized Volatility %": "{:.1f}%", "Sharpe": "{:.2f}", "Max Drawdown %": "{:.1f}%"}
 
-st.markdown("""
-<style>
-[data-testid="stMetric"] {
-    background-color: #E8F1FF !important;
-    border: 1px solid #D5E5FA !important;
-    border-radius: 14px !important;
-    padding: 18px !important;
-}
-[data-testid="stMetricLabel"] { color: #53627A !important; }
-[data-testid="stMetricValue"] { color: #344B73 !important; }
-h1 { color: #405B8B !important; }
-h2, h3 { color: #514A79 !important; }
-[data-testid="stSidebar"] [data-baseweb="input"],
-[data-testid="stSidebar"] [data-baseweb="base-input"],
-[data-testid="stSidebar"] [data-baseweb="select"],
-[data-testid="stSidebar"] [data-baseweb="select"] > div {
-    background-color: #F5F0EC !important;
-    color: #423F3D !important;
-    border: 1px solid #C8B8B0 !important;
-    border-radius: 10px !important;
-}
-[data-testid="stSidebar"] input {
-    background-color: transparent !important;
-    color: #423F3D !important;
-    -webkit-text-fill-color: #423F3D !important;
-    caret-color: #708DA6 !important;
-}
-[data-testid="stSidebar"] input::placeholder {
-    color: #817B76 !important;
-    -webkit-text-fill-color: #817B76 !important;
-}
-[data-testid="stSidebar"] [data-baseweb="select"] * { color: #423F3D !important; }
-[data-baseweb="tag"] { background: #E5DCEB !important; }
-[data-baseweb="tag"] span { color: #55465E !important; }
-[data-baseweb="radio"] label, [data-baseweb="radio"] span { color: #423F3D !important; }
-[data-testid="stSidebar"] [data-baseweb="input"]:focus-within,
-[data-testid="stSidebar"] [data-baseweb="select"]:focus-within {
-    border-color: #708DA6 !important;
-    box-shadow: 0 0 0 1px #708DA6 !important;
-}
-.stButton > button[kind="primary"], [data-testid="stFormSubmitButton"] > button {
-    background: #708DA6 !important;
-    border-color: #708DA6 !important;
-    color: #FFFFFF !important;
-}
-</style>
-""", unsafe_allow_html=True)
-
-
 @st.cache_data(ttl=86400, show_spinner=False)
 def get_us_listings():
     endpoints = [
@@ -198,15 +149,10 @@ def backtest(p, cap, mx, rf):
 
 
 def style(fig, ytitle="", height=520):
-    axis = dict(tickfont=dict(size=12, color="#52645A"), gridcolor="#E5E8E2",
-                linecolor="#A9B4AB", showline=True, zeroline=False)
     fig.update_layout(
-        template="plotly_white", paper_bgcolor="#FFFFFF", plot_bgcolor="#FFFFFF",
-        font=dict(family="Arial, sans-serif", size=14, color="#35423C"),
         height=height, margin=dict(l=55, r=30, t=30, b=80), hovermode="x unified",
-        xaxis=dict(title="Date", **axis), yaxis=dict(title=ytitle, **axis),
-        legend=dict(orientation="h", y=-0.22, x=0, bgcolor="rgba(255,255,255,0)"),
-        hoverlabel=dict(bgcolor="#FFFFFF", bordercolor="#D8DED8"),
+        xaxis=dict(title="Date"), yaxis=dict(title=ytitle),
+        legend=dict(orientation="h", y=-0.22, x=0),
     )
     return fig
 
@@ -223,6 +169,8 @@ st.title("Equity Atlas")
 st.caption("U.S. Equity Analytics  ·  Search, compare and explore historical stock performance")
 
 listings = get_us_listings()
+names = {r.Ticker: re.split(r" - | Common | Class ", r.Company)[0].strip()
+         for r in listings.itertuples()}
 st.session_state.setdefault("picked", [])
 
 with st.sidebar:
@@ -333,7 +281,9 @@ with tab_ov:
             s = stocks[t].dropna()
             if len(s) < 2:
                 continue
-            col.metric(f"{t} · {period}", f"${s.iloc[-1]:,.2f}", f"{rets.get(t, float('nan')):+.2f}%")
+            with col:
+                st.metric(f"{t} · {period}", f"${s.iloc[-1]:,.2f}", f"{rets.get(t, float('nan')):+.2f}%")
+                st.caption(names.get(t, ""))
 
 with tab_cmp:
     cp = stocks.dropna() if align else stocks
@@ -382,7 +332,7 @@ with tab_risk:
                 colorscale=[[0, "#6687B0"], [0.5, "#F5F0EC"], [1, "#C47D5A"]],
                 text=np.round(corr.values, 2), texttemplate="%{text}",
                 hovertemplate="%{x} / %{y}: %{z:.2f}<extra></extra>"))
-            heat.update_layout(template="plotly_white", height=max(380, 60 * len(corr)),
+            heat.update_layout(height=max(380, 60 * len(corr)),
                                margin=dict(l=55, r=30, t=30, b=55), yaxis=dict(autorange="reversed"))
             st.plotly_chart(heat, width="stretch", key="corr_heatmap")
 
@@ -391,6 +341,8 @@ cap, mx = PROFILES[profile]
 
 with tab_sig:
     st.subheader("Trend Signals & Suggested Allocation")
+    st.warning("Educational model only, not investment advice. Signals are rule-based, "
+               "unverified for future performance, and ignore fundamentals, taxes and your risk tolerance.")
     ma200, mom, rsi, vol, score = indicators(hs)
     last_price = hs.ffill().iloc[-1]
     tbl = pd.DataFrame({
@@ -426,10 +378,8 @@ with tab_sig:
         pie = go.Figure(go.Pie(
             labels=list(pos.index) + ["Cash"], values=list(pos["Suggested %"]) + [cash], hole=0.5,
             marker=dict(colors=COLORS[:len(pos)] + ["#D8DED8"])))
-        pie.update_layout(template="plotly_white", height=380, margin=dict(l=20, r=20, t=20, b=20))
+        pie.update_layout(height=380, margin=dict(l=20, r=20, t=20, b=20))
         st.plotly_chart(pie, width="stretch", key="alloc_pie")
-        st.caption("Rule-based educational model (trend, momentum, RSI, volatility). "
-                   "Not investment advice; it ignores fundamentals, taxes and your personal risk tolerance.")
 
 with tab_bt:
     st.subheader("Monthly Rebalance Backtest")
