@@ -224,3 +224,48 @@ for start_idx in range(0, len(prices.columns), 3):
                 value=f"${latest_price:,.2f}",
                 delta=f"{total_return:+.2f}%"
             )
+
+st.subheader("Performance Comparison")
+
+fig = go.Figure()
+
+for i, ticker in enumerate(prices.columns):
+    stock_prices = prices[ticker].dropna()
+
+    if stock_prices.empty:
+        continue
+
+    if mode == "Normalized performance":
+        chart_data = stock_prices / stock_prices.iloc[0] * 100
+    else:
+        chart_data = stock_prices
+
+    fig.add_trace(
+        go.Scatter(
+            x=chart_data.index,
+            y=chart_data.values,
+            mode="lines",
+            name=ticker,
+            line=dict(
+                color=COLORS[i % len(COLORS)],
+                width=2.5
+            )
+        )
+    )
+
+fig.update_layout(
+    template="plotly_white",
+    paper_bgcolor="#FFFFFF",
+    plot_bgcolor="#FFFFFF",
+    height=520,
+    hovermode="x unified",
+    xaxis_title="Date",
+    yaxis_title=(
+        "Index (Start = 100)"
+        if mode == "Normalized performance"
+        else "Adjusted Price (USD)"
+    ),
+    legend=dict(orientation="h", y=-0.2)
+)
+
+st.plotly_chart(fig, use_container_width=True)
