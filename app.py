@@ -14,7 +14,8 @@ COLORS = ["#688B73", "#C47D5A", "#6687B0", "#9A78A5", "#C3A14E",
           "#477D85", "#BD7286", "#897A63", "#557FBA", "#A77C54",
           "#6C987F", "#B26F64", "#7776AD", "#9C9252", "#4E8F9B"]
 
-
+st.markdown("""
+<style>
 
 /* Sidebar input fields - Morandi palette */
 [data-testid="stSidebar"] [data-baseweb="input"],
