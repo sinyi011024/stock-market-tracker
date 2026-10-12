@@ -428,3 +428,66 @@ st.plotly_chart(
     },
     key="stock_comparison_chart"
 )
+
+import numpy as np
+
+if period in ("1D", "5D"):
+    st.info("Risk metrics and correlation require daily data (1M or longer).")
+else:
+    st.subheader("Risk & Return Metrics")
+    rows = []
+    for t in prices.columns:
+        s = prices[t].dropna()
+        r = s.pct_change().dropna()
+        if len(r) < 2:
+            continue
+        years = (s.index[-1] - s.index[0]).days / 365.25
+        total = s.iloc[-1] / s.iloc[0] - 1
+        cagr = (1 + total) ** (1 / years) - 1 if years > 0 else np.nan
+        vol = r.std() * np.sqrt(252)
+        sharpe = r.mean() * 252 / vol if vol > 0 else np.nan
+        mdd = (s / s.cummax() - 1).min()
+        rows.append({
+            "Ticker": t,
+            "Total Return": total * 100,
+            "Annualized Return": cagr * 100,
+            "Annualized Volatility": vol * 100,
+            "Sharpe (rf=0)": sharpe,
+            "Max Drawdown": mdd * 100,
+        })
+    if rows:
+        metrics_df = pd.DataFrame(rows).set_index("Ticker")
+        st.dataframe(
+            metrics_df.style.format({
+                "Total Return": "{:+.1f}%",
+                "Annualized Return": "{:+.1f}%",
+                "Annualized Volatility": "{:.1f}%",
+                "Sharpe (rf=0)": "{:.2f}",
+                "Max Drawdown": "{:.1f}%",
+            }),
+            use_container_width=True,
+        )
+
+    if prices.shape[1] >= 2:
+        st.subheader("Daily Return Correlation")
+        corr = prices.pct_change().dropna(how="all").corr()
+        heat = go.Figure(
+            go.Heatmap(
+                z=corr.values,
+                x=corr.columns,
+                y=corr.index,
+                zmin=-1,
+                zmax=1,
+                colorscale=[[0, "#6687B0"], [0.5, "#F5F0EC"], [1, "#C47D5A"]],
+                text=np.round(corr.values, 2),
+                texttemplate="%{text}",
+                hovertemplate="%{x} / %{y}: %{z:.2f}<extra></extra>",
+            )
+        )
+        heat.update_layout(
+            template="plotly_white",
+            height=max(380, 60 * len(corr)),
+            margin=dict(l=55, r=30, t=30, b=55),
+            yaxis=dict(autorange="reversed"),
+        )
+        st.plotly_chart(heat, use_container_width=True, key="corr_heatmap")
