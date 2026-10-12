@@ -225,6 +225,12 @@ for start_idx in range(0, len(prices.columns), 3):
                 delta=f"{total_return:+.2f}%"
             )
 
+
+
+# ==========================================
+# Stock Performance Comparison Chart
+# ==========================================
+
 st.subheader("Performance Comparison")
 
 fig = go.Figure()
@@ -235,11 +241,13 @@ for i, ticker in enumerate(prices.columns):
     if stock_prices.empty:
         continue
 
+    # Normalize prices to 100 for comparison
     if mode == "Normalized performance":
         chart_data = stock_prices / stock_prices.iloc[0] * 100
     else:
         chart_data = stock_prices
 
+    # Add a line for each selected stock
     fig.add_trace(
         go.Scatter(
             x=chart_data.index,
@@ -249,50 +257,111 @@ for i, ticker in enumerate(prices.columns):
             line=dict(
                 color=COLORS[i % len(COLORS)],
                 width=2.5
+            ),
+            hovertemplate=(
+                "%{x|%b %d, %Y}<br>"
+                "%{y:.2f}"
+                "<extra>%{fullData.name}</extra>"
             )
         )
     )
 
+# ==========================================
+# Chart Layout and Styling
+# ==========================================
 
 fig.update_layout(
     template="plotly_white",
+
+    # Background colors
     paper_bgcolor="#FFFFFF",
     plot_bgcolor="#FFFFFF",
+
+    # Main font settings
     font=dict(
         family="Arial, sans-serif",
         size=14,
         color="#35423C"
     ),
-    height=520,
-    hovermode="x unified",
-    margin=dict(l=35, r=25, t=30, b=65),
 
-    xaxis=dict(
-        title="Date",
-        tickfont=dict(size=12, color="#52645A"),
-        title_font=dict(size=14, color="#35423C"),
-        gridcolor="#E5E8E2",
-        linecolor="#A9B4AB",
-        showline=True
+    # Chart dimensions
+    height=520,
+    margin=dict(
+        l=55,
+        r=30,
+        t=30,
+        b=80
     ),
 
+    # Interactive hover
+    hovermode="x unified",
+
+    # X-axis styling
+    xaxis=dict(
+        title="Date",
+        tickfont=dict(
+            size=12,
+            color="#52645A"
+        ),
+        title_font=dict(
+            size=14,
+            color="#35423C"
+        ),
+        gridcolor="#E5E8E2",
+        linecolor="#A9B4AB",
+        showline=True,
+        zeroline=False
+    ),
+
+    # Y-axis styling
     yaxis=dict(
         title=(
             "Index (Start = 100)"
             if mode == "Normalized performance"
             else "Adjusted Price (USD)"
         ),
-        tickfont=dict(size=12, color="#52645A"),
-        title_font=dict(size=14, color="#35423C"),
+        tickfont=dict(
+            size=12,
+            color="#52645A"
+        ),
+        title_font=dict(
+            size=14,
+            color="#35423C"
+        ),
         gridcolor="#E5E8E2",
         linecolor="#A9B4AB",
-        showline=True
+        showline=True,
+        zeroline=False
     ),
 
+    # Legend styling
     legend=dict(
         orientation="h",
         y=-0.22,
         x=0,
-        font=dict(size=13, color="#35423C")
+        font=dict(
+            size=13,
+            color="#35423C"
+        ),
+        bgcolor="rgba(255,255,255,0)"
+    ),
+
+    # Hover label styling
+    hoverlabel=dict(
+        bgcolor="#FFFFFF",
+        font=dict(
+            size=13,
+            color="#35423C"
+        ),
+        bordercolor="#D8DED8"
     )
+)
+
+# ==========================================
+# Display Interactive Chart
+# ==========================================
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
 )
