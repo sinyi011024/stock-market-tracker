@@ -14,35 +14,135 @@ COLORS = ["#688B73", "#C47D5A", "#6687B0", "#9A78A5", "#C3A14E",
           "#477D85", "#BD7286", "#897A63", "#557FBA", "#A77C54",
           "#6C987F", "#B26F64", "#7776AD", "#9C9252", "#4E8F9B"]
 
+
 st.markdown("""
 <style>
-:root {color-scheme: light;}
-.stApp, [data-testid="stAppViewContainer"] {background:#F7F5F1; color:#35423C;}
-[data-testid="stSidebar"], [data-testid="stSidebarContent"] {background:#EEEFE9 !important; color:#35423C !important;}
-.stApp p, .stApp label, .stApp span, .stApp small,
-[data-testid="stSidebar"] p, [data-testid="stSidebar"] label,
-[data-testid="stSidebar"] span {color:#35423C;}
-[data-testid="stMarkdownContainer"] p {color:#35423C;}
-[data-testid="stCaptionContainer"] p, [data-testid="stWidgetLabel"] p {color:#65746C !important;}
-[data-testid="stMetric"] {background:#FFFFFF; border:1px solid #E4E5DE;
-    border-radius:14px; padding:16px;}
-[data-testid="stMetricLabel"] *, [data-testid="stMetricValue"] * {color:#35423C !important;}
-[data-testid="stMetricValue"] {color:#35423C !important;}
-[data-testid="stVerticalBlockBorderWrapper"] {border-color:#E3E5DE;}
-h1,h2,h3 {color:#35423C !important; letter-spacing:-.02em;}
-[data-baseweb="input"] > div, [data-baseweb="select"] > div,
-[data-baseweb="base-input"] {background:#FFFFFF !important; color:#35423C !important;
- border-color:#CBD3CA !important;}
-[data-baseweb="input"] input, [data-baseweb="select"] input,
-[data-baseweb="base-input"] input {color:#35423C !important; -webkit-text-fill-color:#35423C !important;}
-[data-baseweb="input"] input::placeholder {color:#78867D !important;}
-[data-baseweb="select"] *, [data-baseweb="tag"] * {color:#35423C;}
-[data-baseweb="tag"] {background:#DCE8DD !important;}
-[data-baseweb="tag"] span {color:#35423C !important;}
-[data-baseweb="radio"] label, [data-baseweb="radio"] span {color:#35423C !important;}
-.stButton > button[kind="primary"] {background:#688B73; border-color:#688B73;}
+:root {
+    color-scheme: light;
+}
+
+/* Main background */
+.stApp,
+[data-testid="stAppViewContainer"] {
+    background: #F7F5F2 !important;
+    color: #423F3D !important;
+}
+
+/* Warm beige sidebar */
+[data-testid="stSidebar"],
+[data-testid="stSidebarContent"] {
+    background: #E8E2DC !important;
+    color: #423F3D !important;
+}
+
+/* Main text */
+.stApp p,
+.stApp label,
+.stApp small,
+[data-testid="stMarkdownContainer"] p {
+    color: #423F3D;
+}
+
+/* Sidebar text */
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label {
+    color: #423F3D !important;
+}
+
+/* Secondary text */
+[data-testid="stCaptionContainer"] p,
+[data-testid="stWidgetLabel"] p {
+    color: #77716D !important;
+}
+
+/* Headings */
+h1, h2, h3 {
+    color: #423F3D !important;
+    letter-spacing: -0.02em;
+}
+
+/* White metric cards */
+[data-testid="stMetric"] {
+    background: #FFFFFF;
+    border: 1px solid #DED8D2;
+    border-radius: 14px;
+    padding: 16px;
+}
+
+[data-testid="stMetricLabel"] *,
+[data-testid="stMetricValue"],
+[data-testid="stMetricValue"] * {
+    color: #423F3D !important;
+}
+
+[data-testid="stMetricDelta"] {
+    color: #708DA6 !important;
+}
+
+/* Card borders */
+[data-testid="stVerticalBlockBorderWrapper"] {
+    border-color: #DED8D2;
+}
+
+/* Sidebar input fields */
+[data-testid="stSidebar"] [data-baseweb="input"] > div,
+[data-testid="stSidebar"] [data-baseweb="base-input"],
+[data-testid="stSidebar"] [data-baseweb="select"] > div {
+    background: #FFFFFF !important;
+    border: 1px solid #C9C2BC !important;
+    border-radius: 10px !important;
+}
+
+/* Input text */
+[data-testid="stSidebar"] input {
+    background: transparent !important;
+    color: #423F3D !important;
+    -webkit-text-fill-color: #423F3D !important;
+    caret-color: #708DA6 !important;
+}
+
+/* Placeholder */
+[data-testid="stSidebar"] input::placeholder {
+    color: #817B76 !important;
+    -webkit-text-fill-color: #817B76 !important;
+}
+
+/* Select dropdown */
+[data-testid="stSidebar"] [data-baseweb="select"] * {
+    color: #423F3D !important;
+}
+
+/* Selected ticker tags */
+[data-baseweb="tag"] {
+    background: #E5DCEB !important;
+}
+
+[data-baseweb="tag"] span {
+    color: #55465E !important;
+}
+
+/* Radio labels */
+[data-baseweb="radio"] label,
+[data-baseweb="radio"] span {
+    color: #423F3D !important;
+}
+
+/* Blue focus border */
+[data-testid="stSidebar"] [data-baseweb="input"]:focus-within,
+[data-testid="stSidebar"] [data-baseweb="select"]:focus-within {
+    border-color: #708DA6 !important;
+    box-shadow: 0 0 0 1px #708DA6 !important;
+}
+
+/* Buttons */
+.stButton > button[kind="primary"] {
+    background: #708DA6 !important;
+    border-color: #708DA6 !important;
+    color: #FFFFFF !important;
+}
 </style>
 """, unsafe_allow_html=True)
+
 
 @st.cache_data(ttl=86400, show_spinner=False)
 def get_us_listings():
